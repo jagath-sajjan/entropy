@@ -1,0 +1,10 @@
+[package]
+name = "entropy"
+version = "0.1.0"
+edition = "2024"
+description = "A text editor where the file deletes itself"
+license = "MIT"
+
+[dependencies]
+ratatui = "0.26"
+crossterm = "0.27"
