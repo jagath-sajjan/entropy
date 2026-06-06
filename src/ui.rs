@@ -13,8 +13,6 @@ pub fn draw(f: &mut Frame, app: &App) {
         .constraints([Constraint::Min(1), Constraint::Length(1)])
         .split(f.size());
 
-    let char_count = app.buffer.len();
-
     let editor = Paragraph::new(app.buffer.as_str()).block(
         Block::default()
             .borders(Borders::ALL)
@@ -26,9 +24,21 @@ pub fn draw(f: &mut Frame, app: &App) {
     let status = Paragraph::new(Line::from(vec![
         Span::styled(" chars: ", Style::default().fg(Color::DarkGray)),
         Span::styled(
-            char_count.to_string(),
+            app.buffer.len().to_string(),
             Style::default()
                 .fg(Color::White)
+                .add_modifier(Modifier::BOLD),
+        ),
+        Span::styled("  |  deleted: ", Style::default().fg(Color::DarkGray)),
+        Span::styled(
+            app.chars_deleted.to_string(),
+            Style::default().fg(Color::Red).add_modifier(Modifier::BOLD),
+        ),
+        Span::styled("  |  score: ", Style::default().fg(Color::DarkGray)),
+        Span::styled(
+            app.score.to_string(),
+            Style::default()
+                .fg(Color::Green)
                 .add_modifier(Modifier::BOLD),
         ),
         Span::styled("  |  ctrl+q to quit", Style::default().fg(Color::DarkGray)),
