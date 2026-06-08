@@ -5,7 +5,7 @@ mod ui;
 
 use app::App;
 use crossterm::{
-    event::{DisableMouseCapture, EnableMouseCapture},
+    event::{self, DisableMouseCapture, EnableMouseCapture, Event},
     execute,
     terminal::{EnterAlternateScreen, LeaveAlternateScreen, disable_raw_mode, enable_raw_mode},
 };
@@ -27,10 +27,13 @@ fn main() -> Result<(), io::Error> {
     loop {
         {
             let app_lock = app.lock().unwrap();
-            if !app_lock.running {
+            terminal.draw(|f| ui::draw(f, &app_lock))?;
+
+            if app_lock.game_over {
+                drop(app_lock);
+                event::read()?;
                 break;
             }
-            terminal.draw(|f| ui::draw(f, &app_lock))?;
         }
 
         events::handle_events(Arc::clone(&app))?;
