@@ -31,7 +31,11 @@ fn main() -> Result<(), io::Error> {
 
             if app_lock.game_over {
                 drop(app_lock);
-                event::read()?;
+                loop {
+                    if events::wait_for_any_key()? {
+                        break;
+                    }
+                }
                 break;
             }
         }
