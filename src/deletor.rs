@@ -14,6 +14,12 @@ const WARNINGS: &[&str] = &[
     "tick.",
 ];
 
+const GLYPHS: &[char] = &[
+    '▓', '▒', '░', '█', '▄', '▀', '■', '□', '▪', '▫', '†', '‡', '§', '¶', '©', '®', '×', '÷', '¿',
+    '¡', 'ψ', 'Ω', 'λ', 'Σ', 'Δ', 'Φ', 'Ξ', 'Π', 'Λ', 'Γ', '₿', '∞', '∅', '∇', '∂', '√', '∫', '≠',
+    '≈', '±',
+];
+
 pub fn start(app: Arc<Mutex<App>>) {
     thread::spawn(move || {
         let mut interval = Duration::from_millis(3000);
@@ -25,16 +31,12 @@ pub fn start(app: Arc<Mutex<App>>) {
 
             if tick % 20 == 0 {
                 let mut app = app.lock().unwrap();
-                if !app.buffer.is_empty() {
-                    let idx = pseudo_random(tick) as usize % app.buffer.len();
-                    let safe = app
-                        .buffer
-                        .char_indices()
-                        .map(|(i, _)| i)
-                        .filter(|&i| i <= idx)
-                        .last()
-                        .unwrap_or(0);
-                    app.flicker_pos = Some(safe);
+                let char_count = app.buffer.chars().count();
+                if char_count > 0 {
+                    let char_idx = pseudo_random(tick) as usize % char_count;
+                    app.flicker_pos = Some(char_idx);
+                    let glyph_idx = pseudo_random(tick + 99) as usize % GLYPHS.len();
+                    app.flicker_char = GLYPHS[glyph_idx];
                 }
             }
 
@@ -59,27 +61,29 @@ pub fn start(app: Arc<Mutex<App>>) {
                     break;
                 }
 
-                if app.buffer.is_empty() {
+                let char_count = app.buffer.chars().count();
+
+                if char_count == 0 {
                     app.game_over = true;
                     app.running = false;
                     break;
                 }
 
-                let len = app.buffer.len();
-                let idx = pseudo_random(tick) as usize % len;
-                let safe = app
+                let char_idx = pseudo_random(tick) as usize % char_count;
+                let byte_idx = app
                     .buffer
                     .char_indices()
+                    .nth(char_idx)
                     .map(|(i, _)| i)
-                    .filter(|&i| i <= idx)
-                    .last()
                     .unwrap_or(0);
 
-                app.buffer.remove(safe);
+                app.buffer.remove(byte_idx);
                 app.chars_deleted += 1;
                 app.update_danger();
-                if app.cursor_pos > app.buffer.len() {
-                    app.cursor_pos = app.buffer.len();
+
+                let new_char_count = app.buffer.chars().count();
+                if app.cursor_pos > new_char_count {
+                    app.cursor_pos = new_char_count;
                 }
 
                 if app.chars_deleted % 5 == 0 && interval > Duration::from_millis(800) {
@@ -96,5 +100,7 @@ fn pseudo_random(seed: u64) -> u64 {
         .duration_since(UNIX_EPOCH)
         .unwrap_or_default()
         .subsec_nanos() as u64;
-    (seed.wrapping_mul(6364136223846793005).wrapping_add(t)) % u64::MAX
+    t.wrapping_mul(6364136223846793005)
+        .wrapping_add(seed.wrapping_mul(1442695040888963407))
+        ^ (t >> 17)
 }

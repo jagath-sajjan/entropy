@@ -72,19 +72,25 @@ pub fn draw(f: &mut Frame, app: &App) {
 }
 
 fn build_display(app: &App) -> String {
-    if let Some(pos) = app.flicker_pos {
-        if pos < app.buffer.len() {
-            let mut s = app.buffer.clone();
-            let ch_len = app.buffer[pos..]
-                .chars()
-                .next()
-                .map(|c| c.len_utf8())
-                .unwrap_or(1);
-            s.replace_range(pos..pos + ch_len, "░");
-            return s;
+    let mut chars: Vec<char> = app.buffer.chars().collect();
+    let len = chars.len();
+
+    if let Some(fidx) = app.flicker_pos {
+        if fidx < len && fidx != app.cursor_pos {
+            chars[fidx] = app.flicker_char;
         }
     }
-    app.buffer.clone()
+
+    if app.cursor_visible {
+        let pos = app.cursor_pos.min(len);
+        if pos < len {
+            chars[pos] = '█';
+        } else {
+            chars.push('█');
+        }
+    }
+
+    chars.iter().collect()
 }
 
 fn build_status(app: &App, color: Color) -> Vec<Span<'static>> {
@@ -116,7 +122,7 @@ fn build_status(app: &App, color: Color) -> Vec<Span<'static>> {
     vec![
         Span::styled(" chars: ", Style::default().fg(Color::DarkGray)),
         Span::styled(
-            app.buffer.len().to_string(),
+            app.buffer.chars().count().to_string(),
             Style::default()
                 .fg(Color::White)
                 .add_modifier(Modifier::BOLD),
@@ -163,7 +169,7 @@ fn draw_game_over(f: &mut Frame, app: &App) {
     let lines = vec![
         Line::from(""),
         Line::from(Span::styled(
-            "  ░░ ENTROPY WINS :) ░░ ",
+            "  ░░ ENTROPY WINS ░░",
             Style::default().fg(Color::Red).add_modifier(Modifier::BOLD),
         )),
         Line::from(""),

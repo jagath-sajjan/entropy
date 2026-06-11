@@ -27,14 +27,12 @@ fn main() -> Result<(), io::Error> {
 
     let app = match mode {
         Mode::Empty => App::new(),
-
         Mode::File(path) => {
             if !path.exists() {
                 std::fs::write(&path, "")?;
             }
             App::with_file(path).unwrap_or_else(|_| App::new())
         }
-
         Mode::Picker(dir) => {
             let chosen = filepicker::pick_file(&mut terminal, &dir)?;
             match chosen {
@@ -56,32 +54,46 @@ fn main() -> Result<(), io::Error> {
     let app = Arc::new(Mutex::new(app));
     deletor::start(Arc::clone(&app));
 
-    let mut save_ticks: u8 = 0; // FIXED: moved out of unsafe block, plain stack variable
+    let mut save_ticks: u8 = 0;
 
     loop {
-        {
-            let app_lock = app.lock().unwrap();
-            terminal.draw(|f| ui::draw(f, &app_lock))?;
+        let (game_over, running, snapshot) = {
+            let mut app_lock = app.lock().unwrap();
+            app_lock.tick_cursor();
 
-            if app_lock.game_over {
-                drop(app_lock);
-                loop {
-                    if events::wait_for_any_key()? {
-                        break;
-                    }
+            let char_count = app_lock.buffer.chars().count();
+            if app_lock.cursor_pos > char_count {
+                app_lock.cursor_pos = char_count;
+            }
+            if let Some(fp) = app_lock.flicker_pos {
+                if fp >= char_count {
+                    app_lock.flicker_pos = None;
                 }
-                break;
             }
 
-            if !app_lock.running {
-                // FIXED: was app.lock.running, now correct
-                break;
+            let game_over = app_lock.game_over;
+            let running = app_lock.running;
+            let snapshot = app_lock.clone();
+            (game_over, running, snapshot)
+        };
+
+        terminal.draw(|f| ui::draw(f, &snapshot))?;
+
+        if game_over {
+            loop {
+                if events::wait_for_any_key()? {
+                    break;
+                }
             }
+            break;
+        }
+
+        if !running {
+            break;
         }
 
         events::handle_events(Arc::clone(&app))?;
 
-        // clear save_msg after ~1 second of display
         {
             let mut app_lock = app.lock().unwrap();
             if app_lock.save_msg.is_some() {
