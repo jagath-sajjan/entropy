@@ -7,9 +7,13 @@ license = "MIT"
 homepage = "https://github.com/jagath-sajjan/entropy"
 repository = "https://github.com/jagath-sajjan/entropy"
 readme = "README.md"
-keywords = ["tui", "terminal", "game", "editor", "horror"]
+keywords = ["tui", "terminal", "game", "editor"]
 categories = ["games", "command-line-utilities"]
 
 [[bin]]
 name = "entropy"
 path = "src/main.rs"
+
+[dependencies]
+ratatui = "0.26"
+crossterm = "0.27"

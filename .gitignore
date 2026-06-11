@@ -1,7 +1,6 @@
 cat > .gitignore << 'EOF'
 # rust
 /target
-Cargo.lock
 
 # macos
 .DS_Store
