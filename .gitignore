@@ -1,4 +1,40 @@
+cat > .gitignore << 'EOF'
+# rust
 /target
 Cargo.lock
+
+# macos
 .DS_Store
+.AppleDouble
+.LSOverride
+Icon?
+._*
+.Spotlight-V8
+.Trashes
+
+# editors
 *.swp
+*.swo
+*~
+.vscode/
+.idea/
+*.iml
+
+# cross compilation
+cross/
+
+# release artifacts
+*.exe
+*.dmg
+*.pkg
+*.deb
+*.rpm
+dist/
+
+# env
+.env
+.env.local
+
+# logs
+*.log
+EOF

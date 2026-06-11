@@ -1,0 +1,64 @@
+name: release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  build:
+    name: build ${{ matrix.target }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - target: aarch64-apple-darwin
+            os: macos-latest
+            binary: entropy
+          - target: x86_64-apple-darwin
+            os: macos-latest
+            binary: entropy
+          - target: x86_64-unknown-linux-gnu
+            os: ubuntu-latest
+            binary: entropy
+          - target: x86_64-pc-windows-msvc
+            os: windows-latest
+            binary: entropy.exe
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: install rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - name: build
+        run: cargo build --release --target ${{ matrix.target }}
+
+      - name: rename binary
+        shell: bash
+        run: |
+          cp target/${{ matrix.target }}/release/${{ matrix.binary }} \
+             entropy-${{ matrix.target }}${{ matrix.target == 'x86_64-pc-windows-msvc' && '.exe' || '' }}
+
+      - name: upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: entropy-${{ matrix.target }}
+          path: entropy-${{ matrix.target }}*
+
+  release:
+    name: create release
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          merge-multiple: true
+
+      - name: create github release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: entropy-*
+          generate_release_notes: true
