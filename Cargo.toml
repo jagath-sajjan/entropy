@@ -1,10 +1,15 @@
 [package]
-name = "entropy"
+name = "entropy-tui"
 version = "0.1.0"
-edition = "2024"
-description = "A text editor where the file deletes itself"
+edition = "2021"
+description = "a text editor where the letters deletes itself"
 license = "MIT"
+homepage = "https://github.com/jagath-sajjan/entropy"
+repository = "https://github.com/jagath-sajjan/entropy"
+readme = "README.md"
+keywords = ["tui", "terminal", "game", "editor", "horror"]
+categories = ["games", "command-line-utilities"]
 
-[dependencies]
-ratatui = "0.26"
-crossterm = "0.27"
+[[bin]]
+name = "entropy"
+path = "src/main.rs"
