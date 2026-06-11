@@ -18,7 +18,7 @@ when the buffer hits zero game over.
 
 ### cargo (recommended)
 ```bash
-cargo install entropy
+cargo install entropy-tui
 ```
 
 ### homebrew (mac/linux)
