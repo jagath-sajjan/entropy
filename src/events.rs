@@ -10,7 +10,8 @@ pub fn handle_events(app: Arc<Mutex<App>>) -> Result<(), io::Error> {
             let mut app = app.lock().unwrap();
             match (key.code, key.modifiers) {
                 (KeyCode::Char('q'), KeyModifiers::CONTROL) => app.quit(),
-                (KeyCode::Char('c'), KeyModifiers::CONTROL) => app.quit(), // ADDED: ctrl+c also quits
+                (KeyCode::Char('c'), KeyModifiers::CONTROL) => app.quit(),
+                (KeyCode::Char('s'), KeyModifiers::CONTROL) => app.save(),
                 (KeyCode::Char(c), _) => app.insert_char(c),
                 (KeyCode::Backspace, _) => app.delete_char_before_cursor(),
                 (KeyCode::Enter, _) => app.insert_char('\n'),

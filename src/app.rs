@@ -1,3 +1,5 @@
+use std::path::PathBuf;
+
 pub struct App {
     pub buffer: String,
     pub cursor_pos: usize,
@@ -8,6 +10,8 @@ pub struct App {
     pub danger_level: u8,
     pub flicker_pos: Option<usize>,
     pub warning_msg: Option<&'static str>,
+    pub file_path: Option<PathBuf>,
+    pub save_msg: Option<&'static str>,
 }
 
 impl App {
@@ -22,7 +26,20 @@ impl App {
             danger_level: 0,
             flicker_pos: None,
             warning_msg: None,
+            file_path: None,
+            save_msg: None,
         }
+    }
+
+    pub fn with_file(path: PathBuf) -> Result<Self, std::io::Error> {
+        let content = std::fs::read_to_string(&path)?;
+        let buffer = content.replace("\r\n", "\n");
+        let cursor_pos = buffer.len();
+        let mut app = Self::new();
+        app.buffer = buffer;
+        app.cursor_pos = cursor_pos;
+        app.file_path = Some(path);
+        Ok(app)
     }
 
     pub fn insert_char(&mut self, c: char) {
@@ -38,6 +55,21 @@ impl App {
         }
     }
 
+    pub fn save(&mut self) {
+        if let Some(ref path) = self.file_path {
+            let content = if cfg!(target_os = "windows") {
+                self.buffer.replace('\n', "\r\n")
+            } else {
+                self.buffer.clone()
+            };
+            if std::fs::write(path, content).is_ok() {
+                self.save_msg = Some("  ✓ saved");
+            } else {
+                self.save_msg = Some("  ✗ save failed");
+            }
+        }
+    }
+
     pub fn quit(&mut self) {
         self.running = false;
     }
@@ -48,6 +80,6 @@ impl App {
             10..=24 => 1,
             25..=49 => 2,
             _ => 3,
-        }
+        };
     }
 }

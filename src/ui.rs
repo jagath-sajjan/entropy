@@ -45,14 +45,19 @@ pub fn draw(f: &mut Frame, app: &App) {
     let color = danger_color(app.danger_level);
     let display_text = build_display(app);
 
+    let title = match &app.file_path {
+        Some(p) => format!(
+            " entropy — {} ",
+            p.file_name().and_then(|n| n.to_str()).unwrap_or("unknown")
+        ),
+        None => " entropy ~ type faster than the void ".to_string(),
+    };
+
     let editor = Paragraph::new(display_text.as_str()).block(
         Block::default()
             .borders(Borders::ALL)
             .border_style(Style::default().fg(color))
-            .title(Span::styled(
-                " entropy ~ type faster than the void ",
-                Style::default().fg(color),
-            )),
+            .title(Span::styled(title, Style::default().fg(color))),
     );
 
     f.render_widget(editor, chunks[0]);
@@ -83,6 +88,15 @@ fn build_display(app: &App) -> String {
 }
 
 fn build_status(app: &App, color: Color) -> Vec<Span<'static>> {
+    if let Some(msg) = app.save_msg {
+        return vec![Span::styled(
+            msg,
+            Style::default()
+                .fg(Color::Green)
+                .add_modifier(Modifier::BOLD),
+        )];
+    }
+
     if let Some(msg) = app.warning_msg {
         return vec![Span::styled(
             format!(" ⚠  {} ", msg),
@@ -92,6 +106,12 @@ fn build_status(app: &App, color: Color) -> Vec<Span<'static>> {
                 .add_modifier(Modifier::RAPID_BLINK),
         )];
     }
+
+    let save_hint = if app.file_path.is_some() {
+        "  |  ctrl+s to save"
+    } else {
+        ""
+    };
 
     vec![
         Span::styled(" chars: ", Style::default().fg(Color::DarkGray)),
@@ -115,14 +135,14 @@ fn build_status(app: &App, color: Color) -> Vec<Span<'static>> {
         ),
         Span::styled("  |  ", Style::default().fg(Color::DarkGray)),
         Span::styled(
-            danger_bar(app.danger_level), // FIXED: now a plain String, no format! macro
+            danger_bar(app.danger_level),
             Style::default().fg(color).add_modifier(Modifier::BOLD),
         ),
+        Span::styled(save_hint, Style::default().fg(Color::DarkGray)),
         Span::styled("  |  ctrl+q to quit", Style::default().fg(Color::DarkGray)),
     ]
 }
 
-// FIXED: build the string manually instead of using format! with .repeat()
 fn danger_bar(level: u8) -> String {
     let filled = level as usize;
     let empty = 3usize.saturating_sub(filled);
@@ -143,7 +163,7 @@ fn draw_game_over(f: &mut Frame, app: &App) {
     let lines = vec![
         Line::from(""),
         Line::from(Span::styled(
-            "  ░░ ENTROPY WINS ░░",
+            "  ░░ ENTROPY WINS :) ░░ ",
             Style::default().fg(Color::Red).add_modifier(Modifier::BOLD),
         )),
         Line::from(""),
