@@ -10,8 +10,6 @@ type faster than the void or watch your words disappear.
 when the buffer hits zero game over.
 ```
 
-![entropy demo]()
-
 ---
 
 ## install
