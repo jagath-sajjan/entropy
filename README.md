@@ -3,13 +3,6 @@
 > a text editor where the file deletes itself
 
 you type. it deletes. you lose.
-
-```
-entropy eats your buffer one character at a time.
-type faster than the void or watch your words disappear.
-when the buffer hits zero game over.
-```
-
 ---
 
 ## install
@@ -45,7 +38,7 @@ mv entropy-* /usr/local/bin/entropy
 
 ```bash
 entropy                  # open with empty buffer
-entropy file.txt         # open a file (saves with ctrl+s)
+entropy file.txt         # open a file
 entropy .                # browse current directory
 entropy src/main.rs      # open a specific file
 ```
@@ -124,15 +117,6 @@ src/
   args.rs        — cli argument parsing
   filepicker.rs  — interactive directory browser
 ```
-
----
-
-## why
-
-because your work disappears anyway.
-to crashes, to git resets, to `rm -rf`.
-entropy just makes it honest.
-
 ---
 
 built with [ratatui](https://ratatui.rs) · written in rust · made by [jagath-sajjan](https://github.com/jagath-sajjan)
