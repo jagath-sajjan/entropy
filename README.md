@@ -3,6 +3,7 @@
 > a text editor where the file deletes itself
 
 you type. it deletes. you lose.
+![Entropy Demo](src/demo.png)
 ---
 
 ## install
